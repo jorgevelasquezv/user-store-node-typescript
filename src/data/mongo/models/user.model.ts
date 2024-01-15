@@ -9,6 +9,7 @@ interface IUser extends Document {
     img?: string;
     roles: string[];
     encryptPassword(password: string): Promise<string>;
+    comparePassword(password: string): Promise<boolean>;
 }
 
 const userSchema = new mongoose.Schema<IUser>({
@@ -30,6 +31,10 @@ const userSchema = new mongoose.Schema<IUser>({
 
 userSchema.methods.encryptPassword = function (password: string) {
     return bcryptAdapter.hash(password);
+}
+
+userSchema.methods.comparePassword = function (password: string) {
+    return bcryptAdapter.compare(password, this.password);
 }
 
 export const UserModel = mongoose.model<IUser>('User', userSchema);

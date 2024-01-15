@@ -1,8 +1,14 @@
+import { JWTAdapter } from '../../config';
 import { UserModel } from '../../data';
-import { CustomError, RegisterUserDto, UserEntity } from '../../domain';
+import {
+    CustomError,
+    LoginUserDto,
+    RegisterUserDto,
+    UserEntity,
+} from '../../domain';
 
 export class AuthService {
-    constructor() {}
+    constructor(private jwt: JWTAdapter) {}
 
     public async registerUser(registerUserDto: RegisterUserDto) {
         const existUser = await UserModel.findOne({
@@ -27,5 +33,25 @@ export class AuthService {
         } catch (error) {
             throw CustomError.internalServer(`${error}`);
         }
+    }
+
+    public async loginUser(loginUserDto: LoginUserDto) {
+        const existUser = await UserModel.findOne({
+            email: loginUserDto.email,
+        });
+
+        if(!existUser) throw CustomError.notFound(`User with email ${loginUserDto.email} not found`);
+
+        const isMatch = await existUser.comparePassword(loginUserDto.password);
+
+        if (!isMatch) throw CustomError.badRequest('Invalid password or email');
+        
+        const { password, ...userEntity } = UserEntity.fromObject(existUser);
+
+        const token = await this.jwt.generatedToken({ id: userEntity.id });
+        
+        if (!token) throw CustomError.internalServer('Error generating token');
+
+        return { user: userEntity, token };
     }
 }
