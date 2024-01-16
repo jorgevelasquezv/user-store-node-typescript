@@ -20,4 +20,8 @@ export class MongoDataBase{
             throw error;
         }
     }
+
+    static async disconnect() {
+        await mongoose.disconnect();
+    }
 }

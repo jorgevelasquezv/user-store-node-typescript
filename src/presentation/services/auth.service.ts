@@ -9,10 +9,7 @@ import {
 import { EmailServices } from './email.service';
 
 export class AuthService {
-    constructor(
-        private readonly jwt: JWTAdapter,
-        private readonly emailServices: EmailServices
-    ) {}
+    constructor(private readonly emailServices: EmailServices) {}
 
     public async registerUser(registerUserDto: RegisterUserDto) {
         const existUser = await UserModel.findOne({
@@ -35,7 +32,7 @@ export class AuthService {
 
             const { password, ...userEntity } = UserEntity.fromObject(user);
 
-            const token = await this.jwt.generatedToken({ id: userEntity.id });
+            const token = await JWTAdapter.generatedToken({ id: userEntity.id });
 
             if (!token)
                 throw CustomError.internalServer('Error generating token');
@@ -62,7 +59,7 @@ export class AuthService {
 
         const { password, ...userEntity } = UserEntity.fromObject(existUser);
 
-        const token = await this.jwt.generatedToken({ id: userEntity.id });
+        const token = await JWTAdapter.generatedToken({ id: userEntity.id });
 
         if (!token) throw CustomError.internalServer('Error generating token');
 
@@ -70,7 +67,7 @@ export class AuthService {
     }
 
     private sendEmailValidationLink = async (email: string) => {
-        const token = await this.jwt.generatedToken({ email }, '1d');
+        const token = await JWTAdapter.generatedToken({ email }, '1d');
 
         if (!token) throw CustomError.internalServer('Error generating token');
 
@@ -86,17 +83,17 @@ export class AuthService {
             to: email,
             subject: 'Validate your email',
             htmlBody,
-        }
+        };
 
-        const isSend =  await this.emailServices.sendEmail(options);
+        const isSend = await this.emailServices.sendEmail(options);
 
         if (!isSend) throw CustomError.internalServer('Error sending email');
-        
+
         return true;
     };
 
     public async validateEmail(token: string) {
-        const payload = await this.jwt.validateToken(token);
+        const payload = await JWTAdapter.validateToken(token);
 
         if (!payload) throw CustomError.unauthorized('Invalid token');
 
