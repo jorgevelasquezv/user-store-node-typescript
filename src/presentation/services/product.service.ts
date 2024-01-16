@@ -1,6 +1,8 @@
 import { PaginationDto } from './../../domain/dtos/shared/pagination.dto';
 import { ProductModel } from '../../data';
-import { CreateProductDto, CustomError } from '../../domain';
+import { CreateProductDto, CustomError, UpdateProductDto } from '../../domain';
+import { Validators } from '../../config';
+import { ObjectId } from 'mongoose';
 
 export class ProductService {
     async createProduct(createProductDto: CreateProductDto) {
@@ -54,26 +56,44 @@ export class ProductService {
     }
 
     async getProduct(name: string) {
-        const category = await ProductModel.findOne({ name });
+        const product = await ProductModel.findOne({ name });
 
-        if (!category)
+        if (!product)
             throw CustomError.notFound(`Category with name ${name} not found`);
 
-        return {
-            id: category.id,
-            name: category.name,
-            available: category.available,
-        };
+        return product;
     }
 
-    async updateProduct(id: string, createCategoryDto: CreateProductDto) {
-        const category = await ProductModel.findById(id);
+    async updateProduct(id: string, updateProductDto: UpdateProductDto) {
+        try {
+            const productUpdate = await ProductModel.findByIdAndUpdate(
+                id,
+                { ...updateProductDto },
+                { new: true }
+            )
+                .populate('user')
+                .populate('category');
 
-        if (!category)
-            throw CustomError.notFound(`Category with id ${id} not found`);
+            if (!productUpdate)
+                throw CustomError.notFound(`Product with id ${id} not found`);
+
+            return productUpdate;
+        } catch (error) {
+            if (error instanceof CustomError) throw error;
+            throw CustomError.internalServer(`${error}`);
+        }
     }
 
-    async deleteProduct() {
-        return 'delete category';
+    async deleteProduct(id: string) {
+
+        try {
+            const deleteProduct = await ProductModel.findByIdAndDelete(id);
+            if (!deleteProduct)
+                throw CustomError.notFound(`Product with id ${id} not found`);
+            return deleteProduct;
+        } catch (error) {
+            if (error instanceof CustomError) throw error;
+            throw CustomError.internalServer(`${error}`);
+        }
     }
 }

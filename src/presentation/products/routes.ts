@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuthMiddleware } from '../middlewares/auth.middleware';
 import { ProductController } from './controller';
 import { ProductService } from '../services';
+import { ValidIdMiddleware } from '../middlewares/valid-id.middleware';
 
 export class ProductRoutes {
     static get routes(): Router {
@@ -18,8 +19,16 @@ export class ProductRoutes {
             [AuthMiddleware.validateJWT],
             controller.createProduct
         );
-        router.put('/:id');
-        router.delete('/:id');
+        router.put(
+            '/:id',
+            [AuthMiddleware.validateJWT, ValidIdMiddleware.validId],
+            controller.updateProduct
+        );
+        router.delete(
+            '/:id',
+            [AuthMiddleware.validateJWT, ValidIdMiddleware.validId],
+            controller.deleteProduct
+        );
 
         return router;
     }
