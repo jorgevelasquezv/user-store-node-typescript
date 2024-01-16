@@ -1,8 +1,6 @@
 import { PaginationDto } from './../../domain/dtos/shared/pagination.dto';
 import { ProductModel } from '../../data';
 import { CreateProductDto, CustomError, UpdateProductDto } from '../../domain';
-import { Validators } from '../../config';
-import { ObjectId } from 'mongoose';
 
 export class ProductService {
     async createProduct(createProductDto: CreateProductDto) {

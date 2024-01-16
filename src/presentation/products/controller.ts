@@ -6,7 +6,6 @@ import {
     UpdateProductDto,
 } from '../../domain';
 import { ProductService } from '../services';
-import { json } from 'stream/consumers';
 
 export class ProductController {
     constructor(private readonly productService: ProductService) {}

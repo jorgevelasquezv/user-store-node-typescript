@@ -21,7 +21,7 @@ import { seedData } from './data';
 const randomBetween0AnsX = (x: number) => Math.floor(Math.random() * x);
 
 async function main() {
-    // 0. Borrar todo
+    // 0. Borrar BD
     await Promise.all([
         UserModel.deleteMany(),
         CategoryModel.deleteMany(),
@@ -40,7 +40,7 @@ async function main() {
     );
 
     // 3. Crear productos
-    const products = await ProductModel.insertMany(
+    await ProductModel.insertMany(
         seedData.products.map(product => ({
             ...product,
             user: users[randomBetween0AnsX(users.length)]._id,
